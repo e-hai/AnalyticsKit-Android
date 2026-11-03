@@ -1,82 +1,46 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository.
+Guidance for AI coding agents and human contributors working in this repository.
 
-## Project purpose
+## Project Purpose
 
-AnalyticsKit-Android is an Android multi-module library that wraps analytics SDKs
-(Firebase Analytics first; more providers later) behind a single API.
+**AnalyticsKit-Android** is a production-ready Android multi-module library that wraps analytics SDKs
+(Firebase Analytics first; more providers later) behind a unified, strongly-typed API.
 
-Apps depend on Kit modules and call `Analytics.*`. They must not talk to
-Firebase / other SDKs directly for event tracking.
+Applications depend on Kit modules and call `Analytics.*`. They must not talk to
+Firebase or other third-party SDKs directly for event tracking.
 
-## Module map
+## Module Map
 
-| Module | Role |
-|--------|------|
-| `:analytics` | Core API, facade, provider contract, NoOp / Logging / Composite |
-| `:analytics-firebase` | `FirebaseAnalyticsProvider` + Firebase BOM |
-| `:sample` | Demo app; Logging + Firebase |
+| Module | Role | Dependencies |
+|:---|:---|:---|
+| `:analytics` | Core API, facade, SPI contract, NoOp / Logging / Composite | Zero 3rd-party dependencies |
+| `:analytics-firebase` | `FirebaseAnalyticsProvider` adapter | `:analytics`, Firebase BOM |
+| `:sample` | Demo application (Jetpack Compose) | `:analytics-firebase` |
 
-Do **not** add Firebase (or other vendor SDKs) to `:analytics`. New vendors get
-their own module, e.g. `:analytics-appsflyer`.
+> **Rule**: Do **not** add Firebase (or any vendor SDK) to `:analytics`. New vendors must be isolated in their own adapter modules (e.g. `:analytics-appsflyer`).
 
-## Architecture rules
+## Architecture & Code Guidelines
 
 ```
 App code → Analytics (facade) → AnalyticsProvider(s) → Vendor SDK
 ```
 
-- Public app-facing API lives in `com.kit.analytics` (`Analytics`, `AnalyticsConfig`,
-  `AnalyticsEvent`, `AnalyticsValue`, param DSL).
-- Vendor adapters implement `com.kit.analytics.provider.AnalyticsProvider`.
-- Multiple providers are wrapped by `CompositeAnalyticsProvider` inside
-  `Analytics.initialize` when more than one is configured.
-- Typed params use `AnalyticsValue` (String / Long / Double / Boolean). Do not
-  introduce `Map<String, Any>` for event params.
-- Boolean maps to Firebase as `"true"` / `"false"` strings (Bundle has no bool).
+1. **Facade & Thread Safety**:
+   - Public entry point is `com.kit.analytics.Analytics` singleton.
+   - Internal states (`initialized`, `enabled`, `debug`) must be thread-safe.
+   - Guard against duplicate initialization gracefully with a debug warning.
+2. **Strongly-Typed Parameters**:
+   - Event parameters are strictly constrained to `AnalyticsValue` (`String`, `Long`, `Double`, `Boolean`).
+   - Do **not** introduce `Map<String, Any>` or raw `Object` into public event APIs.
+3. **Fail-Soft Principle**:
+   - `CompositeAnalyticsProvider` must catch any provider exception/error to ensure host applications never crash due to analytics tracking.
+4. **Boolean Mapping**:
+   - In `:analytics-firebase`, Boolean parameters must map to `"true"` / `"false"` strings because Android `Bundle` has no primitive boolean in standard analytics protocols.
 
-## AGP / Kotlin conventions
+## Gradle & Build Conventions
 
-- AGP 9+ has **built-in Kotlin**. Do **not** apply `org.jetbrains.kotlin.android`
-  (causes duplicate `kotlin` extension).
-- Compose modules still use `org.jetbrains.kotlin.plugin.compose`.
-- Prefer version catalog (`gradle/libs.versions.toml`) for deps and plugins.
-- Library modules that expose Firebase artifacts must use `api(platform(firebase-bom))`
-  so consumers resolve versions (empty version = missing BOM on consumer classpath).
-
-## Firebase sample constraints
-
-- Host apps need a **real** `google-services.json` from Firebase Console plus the
-  `google-services` plugin. The old Quickstart mock (`mockproject-1234`) yields
-  `API_KEY_INVALID` from Firebase Installations.
-- `applicationId` must match a `package_name` in that json.
-- Sample defaults to `LoggingAnalyticsProvider` only until a real Firebase
-  config is added; see `sample/google-services.json.README`.
-
-## Coding guidelines
-
-- Kotlin only for library and sample sources.
-- Match existing style: concise KDoc on public types, fail soft in Composite /
-  facade when `debug` is on (log), do not crash the host app for one provider.
-- Prefer small, focused changes; no drive-by refactors or unsolicited docs.
-- New provider checklist:
-  1. New Gradle module depending on `:analytics`
-  2. Implement `AnalyticsProvider`
-  3. Wire sample optionally
-  4. Document in README module table
-
-## Publishing (JitPack)
-
-- Shared script: `gradle/android-library-publish.gradle.kts`
-- Coordinates: `com.github.e-hai.AnalyticsKit:<module>:<git-tag>`
-- Modules published: `:analytics`, `:analytics-firebase` (not `:sample`)
-- CI config: `jitpack.yml` (JDK 21)
-- Do not change `GROUP_ID` casually; it must stay aligned with the GitHub
-  `owner/repo` used by JitPack consumers.
-
-## Out of scope (unless asked)
-
-- Publishing to Maven Central (JitPack is configured)
-- iOS / KMP
-- Changing core API shape without a clear migration path
+- Use **AGP 9+ with built-in Kotlin**. Do **not** apply `org.jetbrains.kotlin.android`.
+- Version catalog (`gradle/libs.versions.toml`) is the single source of truth for dependencies.
+- Library modules exposing Firebase artifacts must use `api(platform(libs.firebase.bom))` so consumers resolve versions correctly.
+- JDK requirement: **JDK 21**.
