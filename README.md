@@ -1,4 +1,4 @@
-# AnalyticsKit
+# AnalyticsKit-Android
 
 Android 统计封装库：业务只依赖统一 API，底层可插拔接入 Firebase Analytics 等 SDK。
 
@@ -94,10 +94,10 @@ dependencyResolutionManagement {
 ```kotlin
 dependencies {
     // 仅核心
-    implementation("com.github.e-hai.AnalyticsKit:analytics:Tag")
+    implementation("com.github.e-hai.AnalyticsKit-Android:analytics:Tag")
 
     // 含 Firebase（会传递依赖 :analytics）
-    implementation("com.github.e-hai.AnalyticsKit:analytics-firebase:Tag")
+    implementation("com.github.e-hai.AnalyticsKit-Android:analytics-firebase:Tag")
 }
 ```
 
