@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Project purpose
 
-AnalyticsKit is an Android multi-module library that wraps analytics SDKs
+AnalyticsKit-Android is an Android multi-module library that wraps analytics SDKs
 (Firebase Analytics first; more providers later) behind a single API.
 
 Apps depend on Kit modules and call `Analytics.*`. They must not talk to
