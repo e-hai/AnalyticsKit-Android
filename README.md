@@ -126,10 +126,10 @@ dependencyResolutionManagement {
 ```kotlin
 dependencies {
     // 方案 A：含 Firebase 适配（推荐，会自动传递依赖核心 :analytics）
-    implementation("com.github.e-hai.AnalyticsKit-Android:analytics-firebase:1.0.0")
+    implementation("com.github.e-hai.AnalyticsKit-Android:analytics-firebase:1.0.1")
 
     // 方案 B：仅引入核心层（不接 Firebase，纯自建或搭配其他 Provider）
-    // implementation("com.github.e-hai.AnalyticsKit-Android:analytics:1.0.0")
+    // implementation("com.github.e-hai.AnalyticsKit-Android:analytics:1.0.1")
 }
 ```
 
