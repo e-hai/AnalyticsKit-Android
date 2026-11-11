@@ -1,0 +1,53 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Publish Version (leave empty to use git tag or gradle.properties)'
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    name: Build & Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ] && [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
+          fi
+          if [ -n "$VERSION" ]; then
+            echo "Publishing version: $VERSION"
+            ./gradlew publishAllPublicationsToGitHubPackagesRepository -PVERSION_NAME="$VERSION"
+          else
+            ./gradlew publishAllPublicationsToGitHubPackagesRepository
+          fi

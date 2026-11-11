@@ -1,9 +1,0 @@
-jdk:
-  - openjdk21
-
-# AGP 9 + publishing is more reliable without configuration cache on JitPack CI.
-env:
-  ORG_GRADLE_PROJECT_org.gradle.configuration-cache: "false"
-
-install:
-  - ./gradlew :analytics:publishToMavenLocal :analytics-firebase:publishToMavenLocal -x test -x lint

@@ -89,21 +89,35 @@ sequenceDiagram
 
 ---
 
-## 快速接入 (JitPack)
+## 快速接入 (GitHub Packages)
 
-### 1. 配置仓库源
+> 💡 **仓库源迁移说明**：本项目已全面迁移至 **GitHub Packages** 托管与发布，相比原 JitPack 现场编译，GitHub Packages 由 CI 预先验证发布，分发更快、版本更稳定。
 
-在项目根目录的 `settings.gradle.kts` 中添加 JitPack 仓库：
+### 1. 配置仓库源与鉴权
+
+在项目根目录的 `settings.gradle.kts` 中添加 GitHub Packages 仓库地址：
 
 ```kotlin
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
+        maven {
+            url = uri("https://maven.pkg.github.com/e-hai/AnalyticsKit-Android")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR") ?: "e-hai"
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 ```
+
+> **提示**：GitHub Packages 要求请求附带认证凭据。可在个人电脑的全局配置 `~/.gradle/gradle.properties` 中添加具有 `read:packages` 权限的 GitHub Personal Access Token (Classic)：
+> ```properties
+> gpr.user=你的GitHub用户名
+> gpr.key=ghp_你的PersonalAccessToken
+> ```
 
 ### 2. 引入依赖
 

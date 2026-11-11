@@ -44,3 +44,11 @@ App code → Analytics (facade) → AnalyticsProvider(s) → Vendor SDK
 - Version catalog (`gradle/libs.versions.toml`) is the single source of truth for dependencies.
 - Library modules exposing Firebase artifacts must use `api(platform(libs.firebase.bom))` so consumers resolve versions correctly.
 - JDK requirement: **JDK 21**.
+
+## Publishing & Dependency Rules
+
+- **GitHub Packages Only**: Releases and artifacts are published exclusively to **GitHub Packages** (`https://maven.pkg.github.com/e-hai/AnalyticsKit-Android`).
+- **JitPack Deprecation**: Do NOT re-introduce JitPack repositories (`jitpack.io`) or `jitpack.yml` configuration.
+- Artifact coordinates:
+  - `com.github.e-hai.AnalyticsKit-Android:analytics:<version>`
+  - `com.github.e-hai.AnalyticsKit-Android:analytics-firebase:<version>`
